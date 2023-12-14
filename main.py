@@ -18,8 +18,6 @@ GROUP_SLUG = os.environ["GROUP_SLUG"]
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
-# https://discord.com/api/oauth2/authorize?client_id=1184356367876771920&permissions=395137666048&scope=bot
-
 
 def _getAlbumOfTheDay():
     res = requests.get(
