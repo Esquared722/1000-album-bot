@@ -1,6 +1,6 @@
 import os
 import logging
-from datetime import time
+from datetime import time, datetime
 
 from dotenv import load_dotenv
 
@@ -18,6 +18,8 @@ GROUP_SLUG = os.environ["GROUP_SLUG"]
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
+def _isWeekend():
+    return datetime.now().weekday in (5, 6)
 
 def _getAlbumOfTheDay():
     res = requests.get(
@@ -59,11 +61,13 @@ class MyClient(discord.Client):
 
     @tasks.loop(time=ANNOUNCE_TIME)
     async def sendAlbumOfTheDay(self):
+        if _isWeekend():
+            return
         channel = self.get_channel(MUSIC_CHANNEL_ID)
         spotifyLink, albumNum = _getAlbumDetails()
         try:
             assert isinstance(channel, GuildChannel)
-            message_content = f"@here\nToday's Album #{albumNum}\n{spotifyLink}"
+            message_content = f"Today's Album (#{albumNum})\n{spotifyLink}"
             await channel.send(message_content)  # type: ignore
         except AssertionError:
             pass
