@@ -1,10 +1,16 @@
-FROM public.ecr.aws/docker/library/python:latest
+FROM python:alpine
 
 # COPY SCRIPT FILES
-COPY . .
+WORKDIR /code
+
+RUN apk add --no-cache gcc musl-dev linux-headers
 
 # INSTALL DEPENDENCIES
 
-RUN python -m pip install -r requirements.txt --no-cache-dir
+COPY requirements.txt requirements.txt
+
+RUN pip install -r requirements.txt
+
+COPY . .
 
 CMD python main.py
