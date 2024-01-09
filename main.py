@@ -15,6 +15,7 @@ BOT_TOKEN = os.environ["BOT_TOKEN"]
 MUSIC_CHANNEL_ID = int(os.environ["MUSIC_CHANNEL_ID"])
 ANNOUNCE_TIME = time(12, 0)
 GROUP_SLUG = os.environ["GROUP_SLUG"]
+GROUP_GUID = os.environ["GROUP_GUID"]
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
@@ -69,6 +70,7 @@ class MyClient(discord.Client):
             assert isinstance(channel, GuildChannel)
             message_content = f"Today's Album (#{albumNum})\n{spotifyLink}"
             await channel.send(message_content)  # type: ignore
+            await channel.send(f"Group Link: https://1001albumsgenerator.com/shares/group/{GROUP_GUID}")
         except AssertionError:
             pass
 
