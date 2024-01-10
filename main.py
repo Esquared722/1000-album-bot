@@ -19,6 +19,9 @@ GROUP_GUID = os.environ["GROUP_GUID"]
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
+logger = logging.Logger(__name__)
+logger.addHandler(handler)
+
 def _isWeekend():
     return datetime.now().weekday in (5, 6)
 
@@ -55,10 +58,10 @@ class MyClient(discord.Client):
         self.sendAlbumOfTheDay.start()
 
     async def on_ready(self):
-        print(f"Logged on as {self.user}")
+        logger.info(f"Logged on as {self.user}")
 
-    async def on_message(self, message):
-        print(f"Message from {message.author}: {message.content}")
+    # async def on_message(self, message):
+    #     logging.info(f"Message from {message.author}: {message.content}")
 
     @tasks.loop(time=ANNOUNCE_TIME)
     async def sendAlbumOfTheDay(self):
@@ -76,7 +79,7 @@ class MyClient(discord.Client):
 
     @sendAlbumOfTheDay.before_loop
     async def before_my_task(self):
-        await self.wait_for("guild_join")
+        await self.wait_for("ready")
 
 
 if __name__ == "__main__":
