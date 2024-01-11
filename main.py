@@ -12,18 +12,21 @@ from discord.abc import GuildChannel
 from discord.ext import tasks
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
-MUSIC_CHANNEL_ID = int(os.environ["MUSIC_CHANNEL_ID"])
+# MUSIC_CHANNEL_ID = int(os.environ["MUSIC_CHANNEL_ID"])
 ANNOUNCE_TIME = time(12, 0)
 GROUP_SLUG = os.environ["GROUP_SLUG"]
 GROUP_GUID = os.environ["GROUP_GUID"]
+MUSIC_CHANNELS = []
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
 logger = logging.Logger(__name__)
 logger.addHandler(handler)
 
+
 def _isWeekend():
     return datetime.now().weekday in (5, 6)
+
 
 def _getAlbumOfTheDay():
     res = requests.get(
@@ -63,19 +66,33 @@ class MyClient(discord.Client):
     # async def on_message(self, message):
     #     logging.info(f"Message from {message.author}: {message.content}")
 
+    def _find_music_channels(self):
+        for channel in self.get_all_channels():
+            if channel.name == "music":
+                MUSIC_CHANNELS.append(channel.id)
+
     @tasks.loop(time=ANNOUNCE_TIME)
     async def sendAlbumOfTheDay(self):
         if _isWeekend():
             return
-        channel = self.get_channel(MUSIC_CHANNEL_ID)
-        spotifyLink, albumNum = _getAlbumDetails()
-        try:
-            assert isinstance(channel, GuildChannel)
-            message_content = f"Today's Album (#{albumNum})\n{spotifyLink}"
-            await channel.send(message_content)  # type: ignore
-            await channel.send(f"Group Link: https://1001albumsgenerator.com/shares/group/{GROUP_GUID}")
-        except AssertionError:
-            pass
+
+        self._find_music_channels()
+
+        spotifyLink, albumNum = (None, None)
+        if len(MUSIC_CHANNELS) > 0:
+            spotifyLink, albumNum = _getAlbumDetails()
+
+        for id in MUSIC_CHANNELS:
+            channel = self.get_channel(id)
+            try:
+                assert isinstance(channel, GuildChannel)
+                message_content = f"Today's Album (#{albumNum})\n{spotifyLink}"
+                await channel.send(message_content)  # type: ignore
+                await channel.send(
+                    f"Group Link: https://1001albumsgenerator.com/shares/group/{GROUP_GUID}"
+                )
+            except AssertionError:
+                pass
 
     @sendAlbumOfTheDay.before_loop
     async def before_my_task(self):
