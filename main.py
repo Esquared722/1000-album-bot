@@ -16,7 +16,7 @@ BOT_TOKEN = os.environ["BOT_TOKEN"]
 ANNOUNCE_TIME = time(12, 0)
 GROUP_SLUG = os.environ["GROUP_SLUG"]
 GROUP_GUID = os.environ["GROUP_GUID"]
-MUSIC_CHANNELS = []
+MUSIC_CHANNELS = set()
 
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 
@@ -69,7 +69,7 @@ class MyClient(discord.Client):
     def _find_music_channels(self):
         for channel in self.get_all_channels():
             if channel.name == "music":
-                MUSIC_CHANNELS.append(channel.id)
+                MUSIC_CHANNELS.add(channel.id)
 
     @tasks.loop(time=ANNOUNCE_TIME)
     async def sendAlbumOfTheDay(self):
