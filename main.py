@@ -25,7 +25,7 @@ logger.addHandler(handler)
 
 
 def _isWeekend():
-    return datetime.now().weekday in (5, 6)
+    return datetime.now().weekday() in (5, 6)
 
 
 def _getAlbumOfTheDay():
